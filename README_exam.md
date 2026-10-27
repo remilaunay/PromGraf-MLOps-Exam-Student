@@ -63,6 +63,8 @@ Grafana provisionne automatiquement la datasource Prometheus et trois dashboards
 - **Model Performance & Drift** : RMSE, MAE, R², MAPE et indicateur de dérive.
 - **Infrastructure Overview** : utilisation CPU, mémoire et système de fichiers de l’hôte.
 
+Le dashboard API complète les courbes avec le nombre de requêtes et de réponses 5xx sur cinq minutes; le taux 5xx reste affiché à 0 % lorsqu’aucune erreur n’est observée. Dans le dashboard modèle, les scores apparaissent après la première évaluation, le statut de dérive indique l’attente avant un premier lot et un panneau donne le nombre de lignes de la dernière évaluation.
+
 L’alerte Grafana sur la dérive est provisionnée au démarrage et visible dans **Alerting**. Prometheus surveille également la disponibilité de l’API et la dérive des données.
 
 Pour tester l’ensemble :
