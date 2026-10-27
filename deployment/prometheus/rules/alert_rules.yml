@@ -1,0 +1,20 @@
+groups:
+  - name: bike-sharing-alerts
+    rules:
+      - alert: BikeAPIUnavailable
+        expr: up{job="bike-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: Bike Sharing API is unavailable
+          description: Prometheus cannot scrape the bike-api service.
+
+      - alert: BikeSharingDataDriftDetected
+        expr: evidently_data_drift_detected_status > 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: Evidently detected Bike Sharing input drift
+          description: At least one input feature differs from the January reference data.
