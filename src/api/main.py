@@ -12,7 +12,7 @@ from typing import Any
 import pandas as pd
 import requests
 from evidently import DataDefinition, Dataset, Regression, Report
-from evidently.metrics import MAE, MAPE, R2Score, RMSE
+from evidently.metrics import MAE, R2Score, RMSE
 from evidently.presets import DataDriftPreset
 from fastapi import FastAPI, HTTPException, Request, Response
 from pydantic import BaseModel, ConfigDict, Field
@@ -220,6 +220,16 @@ def _metric_number(value: Any) -> float | None:
     return None
 
 
+def _calculate_mape(actual: pd.Series, predicted: pd.Series) -> float | None:
+    """Calculate percentage error for rows with non-zero demand only."""
+    non_zero_targets = actual != 0
+    if not non_zero_targets.any():
+        return None
+    errors = (actual[non_zero_targets] - predicted[non_zero_targets]).abs()
+    percentages = errors / actual[non_zero_targets].abs() * 100
+    return float(percentages.mean())
+
+
 def _extract_report_metric(snapshot: Any, metric_name: str) -> float | None:
     """Read one named metric from the result structure returned by Evidently."""
     report = snapshot.dict()
@@ -323,7 +333,7 @@ def evaluate(payload: EvaluationData) -> EvaluationReportOutput:
     )
     current_dataset = Dataset.from_pandas(current[ALL_MODEL_FEATS + [TARGET, PREDICTION]], evaluation_definition)
     reference_dataset = Dataset.from_pandas(reference[ALL_MODEL_FEATS + [TARGET, PREDICTION]], evaluation_definition)
-    evaluation_report = Report([RMSE(), MAE(), R2Score(), MAPE(zero_handling="drop")])
+    evaluation_report = Report([RMSE(), MAE(), R2Score()])
     evaluation_snapshot = evaluation_report.run(current_dataset, reference_dataset)
 
     # Drift compares only the input features. The extra gauge is useful for detecting
@@ -338,7 +348,7 @@ def evaluate(payload: EvaluationData) -> EvaluationReportOutput:
     rmse = _extract_report_metric(evaluation_snapshot, "RMSE")
     mae = _extract_report_metric(evaluation_snapshot, "MAE")
     r2score = _extract_report_metric(evaluation_snapshot, "R2Score")
-    mape = _extract_report_metric(evaluation_snapshot, "MAPE")
+    mape = _calculate_mape(current[TARGET], current[PREDICTION])
     if rmse is None or mae is None or r2score is None:
         logger.error("Could not extract regression scores from Evidently report: %s", evaluation_snapshot.dict())
         raise HTTPException(status_code=500, detail="Evidently did not return all regression scores")
