@@ -1,12 +1,13 @@
 FROM python:3.12-slim
 
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-RUN pip uninstall urllib3 -y
-RUN pip install urllib3
+COPY requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-COPY run_evaluation.py .
+COPY run_evaluation.py ./run_evaluation.py
 
-CMD ["python3", "run_evaluation.py"]
+CMD ["python", "run_evaluation.py"]
