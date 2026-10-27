@@ -2,76 +2,98 @@
   "id": null,
   "uid": "model-performance-drift",
   "title": "Model Performance & Drift",
-  "tags": ["bike-sharing", "ml", "drift"],
+  "tags": ["bike-sharing","ml","drift"],
   "timezone": "browser",
   "schemaVersion": 41,
-  "version": 1,
+  "version": 2,
   "refresh": "15s",
-  "time": {"from": "now-7d", "to": "now"},
+  "time": {"from": "now-7d","to": "now"},
   "panels": [
     {
       "id": 1,
       "type": "timeseries",
       "title": "RMSE",
-      "description": "Lower values indicate better regression accuracy.",
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
-      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []},
-      "options": {"legend": {"displayMode": "list", "placement": "bottom"}, "tooltip": {"mode": "multi"}},
-      "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "editorMode": "code", "expr": "model_rmse_score", "legendFormat": "RMSE", "instant": false, "range": true, "refId": "A"}]
+      "description": "Erreur quadratique moyenne du dernier lot évalué. Aucune valeur avant le premier appel à /evaluate.",
+      "datasource": {"type": "prometheus","uid": "prometheus"},
+      "gridPos": {"h": 8,"w": 12,"x": 0,"y": 0},
+      "fieldConfig": {"defaults": {"unit": "short","decimals": 2},"overrides": []},
+      "options": {"legend": {"displayMode": "list","placement": "bottom"},"tooltip": {"mode": "multi"}},
+      "targets": [{"datasource": {"type": "prometheus","uid": "prometheus"},"editorMode": "code","expr": "model_rmse_score and on(job,instance) (model_evaluated_items > 0)","legendFormat": "RMSE","instant": false,"range": true,"refId": "A"}]
     },
     {
       "id": 2,
       "type": "timeseries",
       "title": "MAE",
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
-      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []},
-      "options": {"legend": {"displayMode": "list", "placement": "bottom"}, "tooltip": {"mode": "multi"}},
-      "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "editorMode": "code", "expr": "model_mae_score", "legendFormat": "MAE", "instant": false, "range": true, "refId": "A"}]
+      "datasource": {"type": "prometheus","uid": "prometheus"},
+      "gridPos": {"h": 8,"w": 12,"x": 12,"y": 0},
+      "fieldConfig": {"defaults": {"unit": "short","decimals": 2},"overrides": []},
+      "options": {"legend": {"displayMode": "list","placement": "bottom"},"tooltip": {"mode": "multi"}},
+      "targets": [{"datasource": {"type": "prometheus","uid": "prometheus"},"editorMode": "code","expr": "model_mae_score and on(job,instance) (model_evaluated_items > 0)","legendFormat": "MAE","instant": false,"range": true,"refId": "A"}],
+      "description": "Erreur absolue moyenne du dernier lot évalué. Aucune valeur avant le premier appel à /evaluate."
     },
     {
       "id": 3,
       "type": "timeseries",
       "title": "R² score",
-      "description": "R-squared may be negative when the model performs worse than a constant baseline.",
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
-      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []},
-      "options": {"legend": {"displayMode": "list", "placement": "bottom"}, "tooltip": {"mode": "multi"}},
-      "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "editorMode": "code", "expr": "model_r2_score", "legendFormat": "R²", "instant": false, "range": true, "refId": "A"}]
+      "description": "Le R² peut être négatif si le modèle fait moins bien qu’une prédiction constante. Aucune valeur avant /evaluate.",
+      "datasource": {"type": "prometheus","uid": "prometheus"},
+      "gridPos": {"h": 8,"w": 12,"x": 0,"y": 8},
+      "fieldConfig": {"defaults": {"unit": "short","decimals": 2},"overrides": []},
+      "options": {"legend": {"displayMode": "list","placement": "bottom"},"tooltip": {"mode": "multi"}},
+      "targets": [{"datasource": {"type": "prometheus","uid": "prometheus"},"editorMode": "code","expr": "model_r2_score and on(job,instance) (model_evaluated_items > 0)","legendFormat": "R²","instant": false,"range": true,"refId": "A"}]
     },
     {
       "id": 4,
       "type": "timeseries",
       "title": "MAPE (%)",
-      "description": "Mean absolute percentage error; zero-valued targets are omitted by Evidently.",
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
-      "fieldConfig": {"defaults": {"unit": "percent"}, "overrides": []},
-      "options": {"legend": {"displayMode": "list", "placement": "bottom"}, "tooltip": {"mode": "multi"}},
-      "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "editorMode": "code", "expr": "model_mape_score", "legendFormat": "MAPE", "instant": false, "range": true, "refId": "A"}]
+      "description": "Erreur absolue en pourcentage du dernier lot évalué; les lignes dont la cible cnt vaut zéro sont exclues.",
+      "datasource": {"type": "prometheus","uid": "prometheus"},
+      "gridPos": {"h": 8,"w": 12,"x": 12,"y": 8},
+      "fieldConfig": {"defaults": {"unit": "percent","decimals": 2},"overrides": []},
+      "options": {"legend": {"displayMode": "list","placement": "bottom"},"tooltip": {"mode": "multi"}},
+      "targets": [{"datasource": {"type": "prometheus","uid": "prometheus"},"editorMode": "code","expr": "model_mape_score and on(job,instance) (model_evaluated_items > 0)","legendFormat": "MAPE","instant": false,"range": true,"refId": "A"}]
     },
     {
       "id": 5,
       "type": "stat",
       "title": "Evidently input drift",
-      "description": "The Grafana alert fires when the gauge is greater than zero. Use make fire-alert to demonstrate it.",
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+      "description": "Statut de dérive du dernier lot. « En attente d’évaluation » apparaît avant /evaluate. Utilisez make fire-alert pour démontrer l’alerte.",
+      "datasource": {"type": "prometheus","uid": "prometheus"},
+      "gridPos": {"h": 6,"w": 12,"x": 0,"y": 16},
       "fieldConfig": {
         "defaults": {
           "color": {"mode": "thresholds"},
-          "mappings": [{"options": {"0": {"text": "No drift"}, "1": {"text": "Drift detected"}}, "type": "value"}],
-          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}
+          "mappings": [{"type": "value","options": {"-1": {"color": "gray","index": 0,"text": "Awaiting evaluation"},"0": {"color": "green","index": 1,"text": "No drift"},"1": {"color": "red","index": 2,"text": "Drift detected"}}}],
+          "thresholds": {"mode": "absolute","steps": [{"color": "gray","value": null},{"color": "green","value": 0},{"color": "red","value": 1}]}
         },
         "overrides": []
       },
-      "options": {"colorMode": "background", "graphMode": "area", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "value"},
-      "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "editorMode": "code", "expr": "evidently_data_drift_detected_status", "legendFormat": "Drift status", "instant": true, "range": false, "refId": "A"}]
+      "options": {"colorMode": "value","graphMode": "none","justifyMode": "center","orientation": "auto","reduceOptions": {"calcs": ["lastNotNull"],"fields": "","values": false},"textMode": "value_and_name"},
+      "targets": [
+        {
+          "datasource": {"type": "prometheus","uid": "prometheus"},
+          "editorMode": "code",
+          "expr": "(evidently_data_drift_detected_status == 1 or (evidently_data_drift_detected_status == 0 and on(job,instance) model_evaluated_items > 0)) or on() vector(-1)",
+          "legendFormat": "Drift status",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Rows in last evaluation",
+      "description": "Nombre de lignes du dernier lot envoyé à /evaluate; 0 indique qu’aucune évaluation n’a encore été faite.",
+      "datasource": {"type": "prometheus","uid": "prometheus"},
+      "gridPos": {"h": 6,"w": 12,"x": 12,"y": 16},
+      "fieldConfig": {"defaults": {"unit": "short","decimals": 0,"color": {"mode": "thresholds"},"thresholds": {"mode": "absolute","steps": [{"color": "gray","value": null},{"color": "green","value": 1}]}},"overrides": []},
+      "options": {"colorMode": "value","graphMode": "none","justifyMode": "center","orientation": "auto","reduceOptions": {"calcs": ["lastNotNull"],"fields": "","values": false},"textMode": "value_and_name"},
+      "targets": [{"datasource": {"type": "prometheus","uid": "prometheus"},"editorMode": "code","expr": "model_evaluated_items or on() vector(0)","legendFormat": "Rows evaluated","instant": true,"range": false,"refId": "A"}]
     }
   ],
-  "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "grafana", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+  "annotations": {"list": [{"builtIn": 1,"datasource": {"type": "grafana","uid": "grafana"},"enable": true,"hide": true,"iconColor": "rgba(0, 211, 255, 1)","name": "Annotations & Alerts","type": "dashboard"}]},
   "links": [],
   "templating": {"list": []}
 }

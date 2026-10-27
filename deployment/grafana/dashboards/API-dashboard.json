@@ -2,46 +2,88 @@
   "id": null,
   "uid": "api-performance",
   "title": "API Performance",
-  "tags": ["bike-sharing", "api"],
+  "tags": ["bike-sharing","api"],
   "timezone": "browser",
   "schemaVersion": 41,
-  "version": 1,
+  "version": 2,
   "refresh": "15s",
-  "time": {"from": "now-6h", "to": "now"},
+  "time": {"from": "now-6h","to": "now"},
   "panels": [
     {
       "id": 1,
       "type": "timeseries",
       "title": "Request rate",
-      "description": "HTTP requests per second, excluding Prometheus scrapes of /metrics.",
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
-      "fieldConfig": {"defaults": {"unit": "reqps"}, "overrides": []},
-      "options": {"legend": {"displayMode": "list", "placement": "bottom"}, "tooltip": {"mode": "multi", "sort": "desc"}},
-      "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "editorMode": "code", "expr": "sum by (endpoint) (rate(api_requests_total{endpoint!=\"/metrics\"}[5m]))", "legendFormat": "{{endpoint}}", "range": true, "refId": "A"}]
+      "description": "Requêtes HTTP par seconde, regroupées par endpoint et hors scrapes Prometheus de /metrics.",
+      "datasource": {"type": "prometheus","uid": "prometheus"},
+      "gridPos": {"h": 8,"w": 12,"x": 0,"y": 0},
+      "fieldConfig": {"defaults": {"unit": "reqps"},"overrides": []},
+      "options": {"legend": {"displayMode": "list","placement": "bottom"},"tooltip": {"mode": "multi","sort": "desc"}},
+      "targets": [{"datasource": {"type": "prometheus","uid": "prometheus"},"editorMode": "code","expr": "sum by (endpoint) (rate(api_requests_total{endpoint!=\"/metrics\"}[5m]))","legendFormat": "{{endpoint}}","range": true,"refId": "A"}]
     },
     {
       "id": 2,
       "type": "timeseries",
       "title": "P95 request latency",
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
-      "fieldConfig": {"defaults": {"unit": "s"}, "overrides": []},
-      "options": {"legend": {"displayMode": "list", "placement": "bottom"}, "tooltip": {"mode": "multi", "sort": "desc"}},
-      "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "editorMode": "code", "expr": "histogram_quantile(0.95, sum by (le) (rate(api_request_duration_seconds_bucket{endpoint!=\"/metrics\"}[5m])))", "legendFormat": "P95", "range": true, "refId": "A"}]
+      "datasource": {"type": "prometheus","uid": "prometheus"},
+      "gridPos": {"h": 8,"w": 12,"x": 12,"y": 0},
+      "fieldConfig": {"defaults": {"unit": "s"},"overrides": []},
+      "options": {"legend": {"displayMode": "list","placement": "bottom"},"tooltip": {"mode": "multi","sort": "desc"}},
+      "targets": [
+        {
+          "datasource": {"type": "prometheus","uid": "prometheus"},
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(api_request_duration_seconds_bucket{endpoint!=\"/metrics\"}[5m]))) and on() (sum(rate(api_request_duration_seconds_count{endpoint!=\"/metrics\"}[5m])) > 0)",
+          "legendFormat": "P95",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "description": "95e percentile de latence sur cinq minutes. Le panneau reste vide quand aucune requête n’a été observée."
     },
     {
       "id": 3,
       "type": "timeseries",
       "title": "HTTP 5xx error rate",
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
-      "fieldConfig": {"defaults": {"unit": "percent"}, "overrides": []},
-      "options": {"legend": {"displayMode": "list", "placement": "bottom"}, "tooltip": {"mode": "multi", "sort": "desc"}},
-      "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "editorMode": "code", "expr": "100 * sum(rate(api_requests_total{status_code=~\"5..\",endpoint!=\"/metrics\"}[5m])) / clamp_min(sum(rate(api_requests_total{endpoint!=\"/metrics\"}[5m])), 1e-9)", "legendFormat": "5xx errors", "range": true, "refId": "A"}]
+      "datasource": {"type": "prometheus","uid": "prometheus"},
+      "gridPos": {"h": 8,"w": 12,"x": 0,"y": 8},
+      "fieldConfig": {"defaults": {"unit": "percent","decimals": 2,"min": 0},"overrides": []},
+      "options": {"legend": {"displayMode": "list","placement": "bottom"},"tooltip": {"mode": "multi","sort": "desc"}},
+      "targets": [
+        {
+          "datasource": {"type": "prometheus","uid": "prometheus"},
+          "editorMode": "code",
+          "expr": "(100 * sum(rate(api_requests_total{status_code=~\"5..\",endpoint!=\"/metrics\"}[5m])) / clamp_min(sum(rate(api_requests_total{endpoint!=\"/metrics\"}[5m])), 1e-9)) or vector(0)",
+          "legendFormat": "5xx errors",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "description": "Part des réponses HTTP 5xx sur les cinq dernières minutes. Affiche 0 % tant qu’aucune réponse 5xx n’est observée."
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Requests (5m)",
+      "description": "Nombre de requêtes HTTP hors scrapes /metrics sur les cinq dernières minutes.",
+      "datasource": {"type": "prometheus","uid": "prometheus"},
+      "gridPos": {"h": 8,"w": 6,"x": 12,"y": 8},
+      "fieldConfig": {"defaults": {"unit": "short","decimals": 0,"color": {"mode": "value"}},"overrides": []},
+      "options": {"colorMode": "value","graphMode": "none","justifyMode": "center","orientation": "auto","reduceOptions": {"calcs": ["lastNotNull"],"fields": "","values": false},"textMode": "value_and_name"},
+      "targets": [{"datasource": {"type": "prometheus","uid": "prometheus"},"editorMode": "code","expr": "sum(increase(api_requests_total{endpoint!=\"/metrics\"}[5m])) or vector(0)","legendFormat": "Requests","instant": true,"range": false,"refId": "A"}]
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "HTTP 5xx errors (5m)",
+      "description": "Nombre de réponses HTTP 5xx sur les cinq dernières minutes.",
+      "datasource": {"type": "prometheus","uid": "prometheus"},
+      "gridPos": {"h": 8,"w": 6,"x": 18,"y": 8},
+      "fieldConfig": {"defaults": {"unit": "short","decimals": 0,"color": {"mode": "value"}},"overrides": []},
+      "options": {"colorMode": "value","graphMode": "none","justifyMode": "center","orientation": "auto","reduceOptions": {"calcs": ["lastNotNull"],"fields": "","values": false},"textMode": "value_and_name"},
+      "targets": [{"datasource": {"type": "prometheus","uid": "prometheus"},"editorMode": "code","expr": "sum(increase(api_requests_total{status_code=~\"5..\",endpoint!=\"/metrics\"}[5m])) or vector(0)","legendFormat": "5xx errors","instant": true,"range": false,"refId": "A"}]
     }
   ],
-  "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "grafana", "uid": "grafana"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+  "annotations": {"list": [{"builtIn": 1,"datasource": {"type": "grafana","uid": "grafana"},"enable": true,"hide": true,"iconColor": "rgba(0, 211, 255, 1)","name": "Annotations & Alerts","type": "dashboard"}]},
   "links": [],
   "templating": {"list": []}
 }
