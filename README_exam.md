@@ -24,11 +24,11 @@ make
 | --- | --- | --- |
 | API FastAPI | <http://localhost:8080> | Prédictions, évaluation et métriques |
 | Documentation API | <http://localhost:8080/docs> | Schémas et endpoints interactifs |
-| Prometheus | <http://localhost:9090> | Collecte des métriques et règles Prometheus |
+| Prometheus | <http://localhost:19090> | Collecte des métriques et règles Prometheus |
 | Grafana | <http://localhost:3000> | Dashboards et alertes |
 | node-exporter | <http://localhost:9100/metrics> | Métriques CPU, mémoire et disque de l’hôte |
 
-La connexion Grafana par défaut est `admin` / `admin`. Les variables `GRAFANA_ADMIN_USER` et `GRAFANA_ADMIN_PASSWORD` permettent de définir les identifiants. Les ports par défaut peuvent être remplacés avec `API_PORT`, `PROMETHEUS_PORT`, `GRAFANA_PORT` et `NODE_EXPORTER_PORT`.
+La connexion Grafana par défaut est `admin` / `admin`. Les variables `GRAFANA_ADMIN_USER` et `GRAFANA_ADMIN_PASSWORD` permettent de définir les identifiants. Prometheus est publié sur le port hôte `19090` par défaut pour éviter les conflits avec une autre instance utilisant `9090`; les ports peuvent être remplacés avec `API_PORT`, `PROMETHEUS_PORT`, `GRAFANA_PORT` et `NODE_EXPORTER_PORT`.
 
 ## Commandes Makefile
 
