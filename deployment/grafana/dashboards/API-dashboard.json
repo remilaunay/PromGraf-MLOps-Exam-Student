@@ -5,7 +5,7 @@
   "tags": ["bike-sharing","api"],
   "timezone": "browser",
   "schemaVersion": 41,
-  "version": 2,
+  "version": 4,
   "refresh": "15s",
   "time": {"from": "now-6h","to": "now"},
   "panels": [
@@ -67,7 +67,7 @@
       "description": "Nombre de requêtes HTTP hors scrapes /metrics sur les cinq dernières minutes.",
       "datasource": {"type": "prometheus","uid": "prometheus"},
       "gridPos": {"h": 8,"w": 6,"x": 12,"y": 8},
-      "fieldConfig": {"defaults": {"unit": "short","decimals": 0,"color": {"mode": "value"}},"overrides": []},
+      "fieldConfig": {"defaults": {"unit": "short","decimals": 0,"color": {"mode": "thresholds"},"thresholds": {"mode": "absolute","steps": [{"color": "green","value": null}]}},"overrides": []},
       "options": {"colorMode": "value","graphMode": "none","justifyMode": "center","orientation": "auto","reduceOptions": {"calcs": ["lastNotNull"],"fields": "","values": false},"textMode": "value_and_name"},
       "targets": [{"datasource": {"type": "prometheus","uid": "prometheus"},"editorMode": "code","expr": "sum(increase(api_requests_total{endpoint!=\"/metrics\"}[5m])) or vector(0)","legendFormat": "Requests","instant": true,"range": false,"refId": "A"}]
     },
@@ -78,7 +78,7 @@
       "description": "Nombre de réponses HTTP 5xx sur les cinq dernières minutes.",
       "datasource": {"type": "prometheus","uid": "prometheus"},
       "gridPos": {"h": 8,"w": 6,"x": 18,"y": 8},
-      "fieldConfig": {"defaults": {"unit": "short","decimals": 0,"color": {"mode": "value"}},"overrides": []},
+      "fieldConfig": {"defaults": {"unit": "short","decimals": 0,"color": {"mode": "thresholds"},"thresholds": {"mode": "absolute","steps": [{"color": "green","value": null},{"color": "red","value": 1}]}},"overrides": []},
       "options": {"colorMode": "value","graphMode": "none","justifyMode": "center","orientation": "auto","reduceOptions": {"calcs": ["lastNotNull"],"fields": "","values": false},"textMode": "value_and_name"},
       "targets": [{"datasource": {"type": "prometheus","uid": "prometheus"},"editorMode": "code","expr": "sum(increase(api_requests_total{status_code=~\"5..\",endpoint!=\"/metrics\"}[5m])) or vector(0)","legendFormat": "5xx errors","instant": true,"range": false,"refId": "A"}]
     }
